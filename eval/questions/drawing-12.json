@@ -1,0 +1,80 @@
+{
+  "name": "活动策划书",
+  "corpus": "data/uploads/87061e12bdcb68f6.docx",
+  "description": "12 道事实提取题，覆盖活动基本信息、线下玩法与名额、线上参与方式。原文为 docx 版活动策划书。",
+  "questions": [
+    {
+      "id": "dr-01",
+      "question": "活动时间是什么时候？",
+      "expected_facts": ["2024年6月13-6月14日"],
+      "expect_section": "活动简介"
+    },
+    {
+      "id": "dr-02",
+      "question": "活动地点在哪里？线上线下分别在什么地方？",
+      "expected_facts": ["商业街", "易班活动群"],
+      "expect_section": "活动简介"
+    },
+    {
+      "id": "dr-03",
+      "question": "这次活动的级别是什么？",
+      "expected_facts": ["校级活动"],
+      "expect_section": "活动简介"
+    },
+    {
+      "id": "dr-04",
+      "question": "活动的指导老师是谁？",
+      "expected_facts": ["车学文"],
+      "expect_section": "活动简介"
+    },
+    {
+      "id": "dr-05",
+      "question": "活动的学生负责人是谁？",
+      "expected_facts": ["刘鸿林"],
+      "expect_section": "活动简介"
+    },
+    {
+      "id": "dr-06",
+      "question": "活动参与者范围是哪里的师生？",
+      "expected_facts": ["绵阳校区", "全体师生"],
+      "expect_section": "活动简介"
+    },
+    {
+      "id": "dr-07",
+      "question": "线下活动的规则是怎样的？怎样才能算参与成功？",
+      "expected_facts": ["骰子", "三个问题"],
+      "expect_section": "三、活动内容",
+      "notes": "需要完整规则描述，不只是关键词。"
+    },
+    {
+      "id": "dr-08",
+      "question": "线下活动两天一共多少个名额？",
+      "expected_facts": ["400"],
+      "expect_section": "三、活动内容"
+    },
+    {
+      "id": "dr-09",
+      "question": "线下活动每个时间段有多少个素拓名额？",
+      "expected_facts": ["20 个"],
+      "expect_section": "三、活动内容"
+    },
+    {
+      "id": "dr-10",
+      "question": "线上活动需要参与者做什么？",
+      "expected_facts": ["瓶盖", "钥匙扣"],
+      "expect_section": "三、活动内容"
+    },
+    {
+      "id": "dr-11",
+      "question": "线上活动的收集表什么时候发出，有多少名额？",
+      "expected_facts": ["上午 10：00", "100 个名额"],
+      "expect_section": "三、活动内容"
+    },
+    {
+      "id": "dr-12",
+      "question": "这个活动的主办方和承办方是谁？",
+      "expected_facts": ["易班工作站"],
+      "expect_section": "活动简介"
+    }
+  ]
+}

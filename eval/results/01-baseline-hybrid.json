@@ -1,0 +1,226 @@
+{
+  "mode": "hybrid",
+  "limit": 3,
+  "generated_at": "2026-10-22T03:49:51",
+  "sets": {
+    "cs5": {
+      "summary": {
+        "total": 5,
+        "retrieval_hit": 5,
+        "retrieval_hit_rate": 1.0,
+        "mrr": 1.0,
+        "latency_p50_ms": 105.8,
+        "latency_p95_ms": 108.2
+      },
+      "rows": [
+        {
+          "id": "cs-01",
+          "question": "基础版支持多少个正式成员？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "九、典型客服问答口径",
+          "latency_ms": 1258.3,
+          "expect_section": "四、成员与权限规则"
+        },
+        {
+          "id": "cs-02",
+          "question": "外部协作者是否占用正式成员名额？基础版和专业版各允许多少个？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "四、成员与权限规则",
+          "latency_ms": 105.8,
+          "expect_section": "四、成员与权限规则"
+        },
+        {
+          "id": "cs-03",
+          "question": "试用版到期后数据会立刻删除吗？最长保留多久？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "九、典型客服问答口径",
+          "latency_ms": 108.2,
+          "expect_section": "五、数据保留与删除规则"
+        },
+        {
+          "id": "cs-04",
+          "question": "基础版 API 调用超额后会停用吗？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "九、典型客服问答口径",
+          "latency_ms": 98.1,
+          "expect_section": "三、额度与超额计费规则"
+        },
+        {
+          "id": "cs-05",
+          "question": "企业版是否一定支持私有化部署？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "九、典型客服问答口径",
+          "latency_ms": 94.6,
+          "expect_section": "八、企业版专属支持规则"
+        }
+      ]
+    },
+    "drawing12": {
+      "summary": {
+        "total": 12,
+        "retrieval_hit": 12,
+        "retrieval_hit_rate": 1.0,
+        "mrr": 1.0,
+        "latency_p50_ms": 98.5,
+        "latency_p95_ms": 113.5
+      },
+      "rows": [
+        {
+          "id": "dr-01",
+          "question": "活动时间是什么时候？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "活动简介",
+          "latency_ms": 106.4,
+          "expect_section": "活动简介"
+        },
+        {
+          "id": "dr-02",
+          "question": "活动地点在哪里？线上线下分别在什么地方？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "活动简介",
+          "latency_ms": 102.6,
+          "expect_section": "活动简介"
+        },
+        {
+          "id": "dr-03",
+          "question": "这次活动的级别是什么？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "活动简介",
+          "latency_ms": 131.0,
+          "expect_section": "活动简介"
+        },
+        {
+          "id": "dr-04",
+          "question": "活动的指导老师是谁？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "活动简介",
+          "latency_ms": 95.0,
+          "expect_section": "活动简介"
+        },
+        {
+          "id": "dr-05",
+          "question": "活动的学生负责人是谁？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "活动简介",
+          "latency_ms": 113.5,
+          "expect_section": "活动简介"
+        },
+        {
+          "id": "dr-06",
+          "question": "活动参与者范围是哪里的师生？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "活动简介",
+          "latency_ms": 99.4,
+          "expect_section": "活动简介"
+        },
+        {
+          "id": "dr-07",
+          "question": "线下活动的规则是怎样的？怎样才能算参与成功？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "三、活动内容",
+          "latency_ms": 99.6,
+          "expect_section": "三、活动内容"
+        },
+        {
+          "id": "dr-08",
+          "question": "线下活动两天一共多少个名额？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "三、活动内容",
+          "latency_ms": 96.6,
+          "expect_section": "三、活动内容"
+        },
+        {
+          "id": "dr-09",
+          "question": "线下活动每个时间段有多少个素拓名额？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "三、活动内容",
+          "latency_ms": 97.6,
+          "expect_section": "三、活动内容"
+        },
+        {
+          "id": "dr-10",
+          "question": "线上活动需要参与者做什么？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "二 、活动背景",
+          "latency_ms": 93.8,
+          "expect_section": "三、活动内容"
+        },
+        {
+          "id": "dr-11",
+          "question": "线上活动的收集表什么时候发出，有多少名额？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "三、活动内容",
+          "latency_ms": 90.4,
+          "expect_section": "三、活动内容"
+        },
+        {
+          "id": "dr-12",
+          "question": "这个活动的主办方和承办方是谁？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "活动简介",
+          "latency_ms": 97.1,
+          "expect_section": "活动简介"
+        }
+      ]
+    }
+  },
+  "overall": {
+    "total": 17,
+    "retrieval_hit": 17,
+    "retrieval_hit_rate": 1.0,
+    "mrr": 1.0,
+    "latency_p50_ms": 99.4,
+    "latency_p95_ms": 131.0
+  }
+}

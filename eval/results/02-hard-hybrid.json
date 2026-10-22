@@ -1,0 +1,125 @@
+{
+  "mode": "hybrid",
+  "limit": 3,
+  "generated_at": "2026-10-22T03:57:14",
+  "sets": {
+    "hard8": {
+      "summary": {
+        "total": 8,
+        "retrieval_hit": 8,
+        "retrieval_hit_rate": 1.0,
+        "mrr": 0.9375,
+        "latency_p50_ms": 98.9,
+        "latency_p95_ms": 104.0,
+        "section_diversity": 0.70875
+      },
+      "rows": [
+        {
+          "id": "hd-01",
+          "question": "基础版用户某月总共调用 18000 次 API，超额部分按什么单价计费？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "三、额度与超额计费规则",
+          "latency_ms": 831.9,
+          "expect_section": "三、额度与超额计费规则",
+          "section_diversity": 0.33
+        },
+        {
+          "id": "hd-02",
+          "question": "专业版的月度 AI 问答额度比基础版多多少？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "二、套餐说明",
+          "latency_ms": 101.6,
+          "expect_section": "二、套餐说明",
+          "section_diversity": 1.0
+        },
+        {
+          "id": "hd-03",
+          "question": "哪些套餐不支持 OCR 图片解析？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "二、套餐说明",
+          "latency_ms": 104.0,
+          "expect_section": "三、额度与超额计费规则",
+          "section_diversity": 0.33
+        },
+        {
+          "id": "hd-04",
+          "question": "客户已经开具了增值税专用发票，还能直接退款吗？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "七、发票规则",
+          "latency_ms": 102.1,
+          "expect_section": "六、退款规则",
+          "section_diversity": 0.67
+        },
+        {
+          "id": "hd-05",
+          "question": "企业版没有签 SLA 的情况下，重大故障多久响应？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "八、企业版专属支持规则",
+          "latency_ms": 96.2,
+          "expect_section": "八、企业版专属支持规则",
+          "section_diversity": 1.0
+        },
+        {
+          "id": "hd-06",
+          "question": "团队成员被停用后，从什么时候开始不再计入成员数？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "四、成员与权限规则",
+          "latency_ms": 95.1,
+          "expect_section": "四、成员与权限规则",
+          "section_diversity": 0.67
+        },
+        {
+          "id": "hd-07",
+          "question": "基础版订阅到期后，宽限期和只读保留期分别是多久？",
+          "hit": true,
+          "rank": 1,
+          "mrr": 1.0,
+          "missing": [],
+          "top_section": "五、数据保留与删除规则",
+          "latency_ms": 95.6,
+          "expect_section": "五、数据保留与删除规则",
+          "section_diversity": 0.67
+        },
+        {
+          "id": "hd-08",
+          "question": "试用版、基础版、专业版中，成员人数上限达到 10 人及以上的有哪些？",
+          "hit": true,
+          "rank": 2,
+          "mrr": 0.5,
+          "missing": [],
+          "top_section": "九、典型客服问答口径",
+          "latency_ms": 92.9,
+          "expect_section": "二、套餐说明",
+          "section_diversity": 1.0
+        }
+      ]
+    }
+  },
+  "overall": {
+    "total": 8,
+    "retrieval_hit": 8,
+    "retrieval_hit_rate": 1.0,
+    "mrr": 0.9375,
+    "latency_p50_ms": 98.9,
+    "latency_p95_ms": 104.0,
+    "section_diversity": 0.70875
+  }
+}
