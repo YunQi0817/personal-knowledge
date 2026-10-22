@@ -64,8 +64,11 @@ def retrieve(
     )
 
 
-def build_user_prompt(query: str, hits: Sequence[dict[str, Any]]) -> str:
-    """组装 user_prompt：片段块格式与教程一致。
+def build_context(hits: Sequence[dict[str, Any]]) -> str:
+    """把召回结果拼成带来源标注的上下文块（**不含问题**）。
+
+    Agent 模式下的工具返回值只需要这些块——问题本身已经在对话历史里；
+    固定管道则用 ``build_user_prompt`` 把它和问题包在一起。
 
     **Small-to-Big**：索引的是小块（``Chunk.text``，便于精确命中），但送进模型的
     是它**所属章节的完整文本**（``parent_text``）。这是实测出来的——某策划书只喂
@@ -73,6 +76,7 @@ def build_user_prompt(query: str, hits: Sequence[dict[str, Any]]) -> str:
     而完整章节让「活动流程」这类需要整段上下文的问题不至于被切碎。
 
     同一章节的多个命中只保留一份，否则一个章节会重复占满上下文。
+    （检索层已做章节去重，这里是第二道保险。）
     """
     context_blocks: list[str] = []
     seen: set[tuple[str, str]] = set()
@@ -101,15 +105,16 @@ def build_user_prompt(query: str, hits: Sequence[dict[str, Any]]) -> str:
             f"[片段{len(context_blocks) + 1} | chunk_id={chunk_id} | source={name}]\n{text}"
         )
 
-    # 将多个上下文片段用换行符连成一个大字符串
-    context = "\n\n".join(context_blocks)
+    return "\n\n".join(context_blocks)
 
-    # 构造 Prompt
+
+def build_user_prompt(query: str, hits: Sequence[dict[str, Any]]) -> str:
+    """组装 user_prompt：问题 + 上下文（固定管道用）。"""
     return f"""问题：
 {query}
 
 上下文：
-{context}
+{build_context(hits)}
 """
 
 
