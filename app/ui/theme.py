@@ -70,26 +70,73 @@ html, body, [data-testid="stAppViewContainer"] {
 [data-testid="stSidebar"] [data-testid="stVerticalBlock"] { gap: .3rem; }
 
 /* 会话列表项：左对齐、无边框、悬停高亮 —— 像列表项而不是按钮。
-   只作用于 ``st-key-conv_`` 开头的按钮：Streamlit 会给带 key 的元素加上
-   ``st-key-<key>`` 类，用它可以精确圈定范围，不会波及「入库」「删除」
-   以及侧栏折叠按钮。 */
-[data-testid="stSidebar"] [class*="st-key-conv_"] button {
-    justify-content: flex-start;
-    text-align: left;
+   只作用于 ``st-key-conv_`` / ``st-key-convactive_`` 开头的按钮：Streamlit 会给
+   带 key 的元素加上 ``st-key-<key>`` 类，用它可以精确圈定范围，
+   不会波及「入库」「删除」以及侧栏折叠按钮。 */
+[data-testid="stSidebar"] [class*="st-key-conv_"] button,
+[data-testid="stSidebar"] [class*="st-key-convactive_"] button {
+    justify-content: flex-start !important;
     border: none;
     background: transparent;
     box-shadow: none;
-    padding: .42rem .62rem;
-    border-radius: .55rem;
-    font-size: .895rem;
+    padding: 0 .55rem;
+    border-radius: .5rem;
+    font-size: .875rem;
     font-weight: 400;
-    line-height: 1.35;
-    min-height: 0;
+    line-height: 1.2;
+    height: 2.05rem;
+    min-height: 2.05rem;
     color: inherit;
+    overflow: hidden;
 }
+
+/* **关键**：Streamlit 按钮内部还有**两层 flex 容器**，默认 justify-content: center。
+   只把 <button> 改成 flex-start 是没用的——button 的 flex-start 只作用于它的
+   直接子元素，而那层子元素本来就满宽；真正把文字挤到中间的是里面那两层。
+
+   实测（CDP 量的 x 坐标）：短标题 x = 29 + (197 - 宽度) / 2，正是居中公式。
+
+   这里对按钮内部**所有后代**统一左对齐，不写 emotion 生成的哈希类名
+   （st-emotion-cache-xxxx），否则 Streamlit 一升级就失效。 */
+[data-testid="stSidebar"] [class*="st-key-conv_"] button *,
+[data-testid="stSidebar"] [class*="st-key-convactive_"] button * {
+    justify-content: flex-start !important;
+    text-align: left !important;
+}
+[data-testid="stSidebar"] [class*="st-key-conv_"] button p,
+[data-testid="stSidebar"] [class*="st-key-convactive_"] button p,
+[data-testid="stSidebar"] [class*="st-key-conv_"] button [data-testid="stMarkdownContainer"],
+[data-testid="stSidebar"] [class*="st-key-convactive_"] button [data-testid="stMarkdownContainer"] {
+    width: 100% !important;
+    margin: 0 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 [data-testid="stSidebar"] [class*="st-key-conv_"] button:hover {
-    background: rgba(128, 128, 128, .14);
+    background: rgba(128, 128, 128, .13);
     border: none;
+}
+
+/* 当前对话：浅紫底 + 左侧竖条。
+   用 inset 阴影画竖条，能和圆角共存；不再往标题里塞 "●"。 */
+[data-testid="stSidebar"] [class*="st-key-convactive_"] button {
+    background: rgba(79, 70, 229, .10) !important;
+    color: #4f46e5 !important;
+    box-shadow: inset 2px 0 0 0 #4f46e5 !important;
+}
+[data-testid="stSidebar"] [class*="st-key-convactive_"] button p {
+    font-weight: 550 !important;
+}
+[data-testid="stSidebar"] [class*="st-key-convactive_"] button:hover {
+    background: rgba(79, 70, 229, .16) !important;
+}
+
+/* 会话行：标题与删除按钮垂直居中对齐，列间距收紧 */
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"] {
+    align-items: center;
+    gap: .1rem;
 }
 
 /* 会话的删除按钮：平时低调，悬停变红。
@@ -99,11 +146,14 @@ html, body, [data-testid="stAppViewContainer"] {
     border: none;
     background: transparent;
     box-shadow: none;
-    color: rgba(128, 128, 128, .85);
-    padding: .3rem 0;
-    min-height: 0;
-    font-size: .82rem;
-    line-height: 1.1;
+    color: rgba(128, 128, 128, .5);
+    padding: 0;
+    height: 1.7rem;
+    min-height: 1.7rem;
+    width: 1.7rem;
+    font-size: .78rem;
+    line-height: 1;
+    border-radius: .45rem;
 }
 [data-testid="stSidebar"] [class*="st-key-convdel_"] button:hover {
     background: rgba(239, 68, 68, .13);
@@ -114,8 +164,10 @@ html, body, [data-testid="stAppViewContainer"] {
     border: none;
     background: #dc2626;
     color: #fff;
-    font-size: .76rem;
+    font-size: .72rem;
     font-weight: 600;
+    width: auto;
+    padding: 0 .4rem;
 }
 [data-testid="stSidebar"] [class*="st-key-convdel_ok_"] button:hover {
     background: #b91c1c;

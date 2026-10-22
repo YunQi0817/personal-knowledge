@@ -118,6 +118,24 @@ def _doc_name(document: dict) -> str:
     return Path(source).name or source
 
 
+def _strip_leading_heading(text: str) -> str:
+    """去掉正文开头的第一个 Markdown 标题行。
+
+    总结消息在外层已经拼了 ``## {heading}``，而模型生成的正文往往也会自己写一个
+    标题，结果界面上出现两个「知识库总览」。这里只吃掉**开头第一个**标题行，
+    正文里的 ``###`` 小节不动。
+    """
+    lines = text.splitlines()
+    index = 0
+    while index < len(lines) and not lines[index].strip():
+        index += 1
+    if index < len(lines) and lines[index].lstrip().startswith("#"):
+        lines.pop(index)
+        while index < len(lines) and not lines[index].strip():
+            lines.pop(index)
+    return "\n".join(lines).strip()
+
+
 def _delete_clicked(conversation_id: str) -> None:
     """第一次点击只是"上膛"，再点一次才真正删除。"""
     state = st.session_state
@@ -257,11 +275,15 @@ with st.sidebar:
         title_col, action_col = st.columns([5, 1], gap="small")
 
         title_col.button(
-            ("● " if active else "") + item["title"],
-            key=f"conv_{item['id']}",
+            item["title"],
+            # 激活项换一个 key，好让 CSS 单独高亮（st-key-convactive_*）。
+            # 以前是把 "● " 拼进标题文本里，那会挤占宽度、影响截断。
+            key=(f"convactive_{item['id']}" if active else f"conv_{item['id']}"),
             use_container_width=True,
             on_click=_switch_to,
             args=(item["id"],),
+            # 标题被截断时，悬停能看到完整内容
+            help=item["title"],
         )
         action_col.button(
             "确认" if armed else "✕",
@@ -378,7 +400,8 @@ if request:
             else:
                 result = qa.summarize_document(str(target))
                 heading = f"《{result.get('title') or target}》内容概要"
-            body = (result.get("summary") or "").strip()
+            # 模型常在正文开头自带标题，先去掉再拼我们自己的标题，避免出现两个
+            body = _strip_leading_heading((result.get("summary") or "").strip())
             content = (
                 f"## {heading}\n\n{body}"
                 if body
