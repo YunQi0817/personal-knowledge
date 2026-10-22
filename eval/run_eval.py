@@ -149,7 +149,7 @@ def eval_answer(qa_module, questions: list[dict], limit: int) -> list[dict]:
     rows = []
     for item in questions:
         started = time.perf_counter()
-        result = qa_module.answer(item["question"], limit=limit)
+        result = qa_module.answer(item["question"])
         elapsed_ms = (time.perf_counter() - started) * 1000
         answer = result.get("answer", "")
         miss = missing_facts(answer, item["expected_facts"])

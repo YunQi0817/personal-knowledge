@@ -409,15 +409,10 @@ for message in current_messages:
 if prompt:
     with st.chat_message("assistant", avatar=AVATAR["assistant"]):
         try:
-            with st.spinner("检索知识库…"):
-                hits = qa.retrieve(prompt, limit)
-            if not hits:
-                st.warning("知识库中没有检索到相关内容，回答可能不准确。")
-
-            answer = st.write_stream(
-                qa.stream_answer(prompt, hits=hits, history=history)
-            )
-            sources = qa.format_sources(hits)
+            # 不再预先检索：由 Agent 自己决定要不要检索、检索几次、用哪个工具。
+            # 引用来源在流式结束后从检索日志里取（只有真的检索过才会有）。
+            answer = st.write_stream(qa.stream_answer(prompt, history=history))
+            sources = qa.format_sources(qa.take_search_log())
             render_sources(sources)
             chat_store.append(conversation_id, "assistant", answer, sources)
         except Exception as exc:  # noqa: BLE001 - 把后端错误显示到界面

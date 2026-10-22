@@ -38,11 +38,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Iterator, Sequence
 
+from langchain_core.messages import AIMessageChunk, ToolMessage
+
 from app import config
 from app.core import milvus
 from app.core.embeddings import embed_model
-from app.core.llm import agent
 from app.services import summarize
+from app.services.agent import get_agent
+from app.services.tools import take_search_log  # noqa: F401  供界面取本次引用
 
 #: 送进上下文的字符预算；某一节超预算时就退回命中到的小块，
 #: 免得一个超大章节把其他章节全挤出去。
@@ -134,44 +137,35 @@ def format_sources(hits: Sequence[dict[str, Any]]) -> list[dict[str, Any]]:
 
 def stream_answer(
     query: str,
-    hits: list[dict[str, Any]] | None = None,
     history: list[dict[str, str]] | None = None,
-    limit: int | None = None,
 ) -> Iterator[str]:
     """流式产出回答。
 
-    ``hits`` 允许调用方预先传入，这样界面可以先拿到来源、再流式输出，
-    不必为了展示引用而重复检索一次。
+    **只有一个 Agent**：要不要检索、检索几次、用哪个工具，全由它自己决定。
+    这里不再预先检索、也不再拼接上下文——那是固定管道的做法。
 
-    教程用 ``agent.invoke`` 一次返回；这里用 ``agent.stream`` 逐段产出，
-    事件形如 ``(AIMessageChunk, metadata)``。
+    只把模型自己产出的文本流给界面。工具返回的内容（检索到的资料原文）
+    **不能**流出去，否则界面上会直接出现一大段原文。
     """
-    if hits is None:
-        hits = retrieve(query, limit)
-
-    user_prompt = build_user_prompt(query, hits)
-
     messages: list[dict[str, str]] = list(history or [])
-    messages.append({"role": "user", "content": user_prompt})
+    messages.append({"role": "user", "content": query})
 
-    for event in agent.stream({"messages": messages}, stream_mode="messages"):
+    for event in get_agent().stream({"messages": messages}, stream_mode="messages"):
         # stream_mode="messages" 产出 (消息块, 元数据) 元组
         message = event[0] if isinstance(event, tuple) else event
+        if isinstance(message, ToolMessage):
+            continue  # 工具结果只进模型上下文，不给用户看
+        if not isinstance(message, AIMessageChunk):
+            continue
         text = getattr(message, "content", "") or ""
         if text:
             yield text
 
 
-def answer(
-    query: str,
-    hits: list[dict[str, Any]] | None = None,
-    history: list[dict[str, str]] | None = None,
-    limit: int | None = None,
-) -> dict[str, Any]:
+def answer(query: str, history: list[dict[str, str]] | None = None) -> dict[str, Any]:
     """非流式问答，便于脚本内自测与批量评估。"""
-    if hits is None:
-        hits = retrieve(query, limit)
-    text = "".join(stream_answer(query, hits=hits, history=history))
+    text = "".join(stream_answer(query, history=history))
+    hits = take_search_log()  # 必须在生成器消费完之后取
     return {"answer": text, "sources": format_sources(hits), "hits": hits}
 
 

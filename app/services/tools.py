@@ -25,6 +25,21 @@ def _doc_label(doc: dict) -> str:
     return Path(source).name or str(doc.get("doc_id", ""))
 
 
+#: 记录本次问答中 search_knowledge 命中的**原始**结果，供界面渲染引用。
+#:
+#: 说明：这是模块级状态，面向**单用户本地应用**。Streamlit 每个会话独立跑脚本，
+#: 但模块级变量是跨会话共享的——将来要做多用户并发，需要改成按会话隔离，
+#: 或改为从工具返回内容里解析引用。
+_SEARCH_LOG: list[dict] = []
+
+
+def take_search_log() -> list[dict]:
+    """取出并清空检索日志（原始 milvus 命中）。"""
+    hits = list(_SEARCH_LOG)
+    _SEARCH_LOG.clear()
+    return hits
+
+
 @tool
 def search_knowledge(query: str, top_k: int = 3) -> str:
     """在个人知识库中检索与问题相关的资料片段。
@@ -36,6 +51,7 @@ def search_knowledge(query: str, top_k: int = 3) -> str:
     from app.services import qa
 
     hits = qa.retrieve(query, limit=top_k)
+    _SEARCH_LOG.extend(hits)
     if not hits:
         return "知识库中没有检索到相关内容。"
     return qa.build_context(hits)

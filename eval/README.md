@@ -208,13 +208,39 @@
 **Agent 慢 2.6~3.6 倍**，因为至少多一次模型往返（先决定调不调工具）。
 这是真实代价，不是实现问题——除非换成单次调用就能决定工具的更小模型。
 
+### 合并为单一 Agent（同日完成）
+
+双路径只是做 A/B 的临时脚手架。拿到数据后**已删除固定管道**，现在全项目只有
+一个带工具的 Agent：
+
+| 改动 | 说明 |
+|---|---|
+| `app/core/llm.py` | 删掉 `agent`（`tools=[]`），只保留 `model`；模型名改读 `MIMO_MODEL` |
+| `app/services/qa.py` | `stream_answer` 直接把问题交给 Agent，不再预检索、不再拼 prompt |
+| `app/services/agent.py` | 删掉 `LEGACY_SYSTEM_PROMPT` |
+| `app/config.py` | 删掉 `AGENT_MODE` / `AGENT_MAX_STEPS`（已无意义） |
+| `app/ui/streamlit_app.py` | 去掉预检索；引用改从检索日志取 |
+| `eval/agent/bench_agent_vs_fixed.py` | 删除（固定管道已不存在） |
+
+**关键修复**：合并后工具返回的**资料原文**也会流经 `stream_mode="messages"`，
+必须过滤掉 `ToolMessage`，否则界面上会直接出现一大段检索原文。
+`stream_answer` 现在只产出 `AIMessageChunk` 的文本。
+
+**引用来源怎么拿**：Agent 自己决定检索几次，所以界面无法预先知道引用。
+`tools.search_knowledge` 把原始命中记进 `_SEARCH_LOG`，流式结束后由
+`qa.take_search_log()` 取出渲染。
+
+> ⚠️ 这是模块级状态，面向**单用户本地应用**。Streamlit 每个会话独立跑脚本，
+> 但模块级变量跨会话共享——要做多用户并发需改成按会话隔离，
+> 或改为从工具返回内容里解析引用。
+
 ### 待办（Day 2 起）
 
-1. `qa.stream_answer` 支持 Agent 模式，并处理流式中的工具调用事件
-2. Streamlit 界面显示「正在检索…」等工具调用状态
-3. 扩充 Agent 题集（含多步问题：先检索再联网）与指标
+1. Streamlit 界面显示「正在检索…」等工具调用状态
+   （`st.status` + 工具事件回调）
+2. 扩充 Agent 题集（含多步问题：先检索再联网）与指标
    （`tool_call_rate` / `steps` / `end_to_end_latency`）
-4. A/B：`RAG_AGENT_MODE=0/1` 对比能力与代价
+3. 把 `summarize_document` 的 40 秒耗时纳入评测（当前无缓存时会很慢）
 
 ---
 

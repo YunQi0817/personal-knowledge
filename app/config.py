@@ -75,21 +75,6 @@ SECTION_DEDUPE_FETCH_FACTOR = 3
 
 
 # =========================
-# Agent 模式
-# =========================
-#: 是否用 Agent（工具调用）替代固定管道。
-#:
-#: 固定管道：无论问什么都先检索一次、且只检索一次。
-#: Agent 模式：由模型决定要不要检索、检索几次、用哪个工具（检索 / 列文档 / 总结 / 联网）。
-#:
-#: 设 RAG_AGENT_MODE=0 可回到固定管道，用于 A/B 对比（见 eval/README.md）。
-AGENT_MODE = os.getenv("RAG_AGENT_MODE", "1").lower() not in ("0", "false", "no", "off")
-
-#: Agent 最多走几步（含工具调用轮次），防止异常情况下打转。
-AGENT_MAX_STEPS = int(os.getenv("RAG_AGENT_MAX_STEPS", "6"))
-
-
-# =========================
 # 路径
 # =========================
 DATA_DIR = BASE_DIR / "data"

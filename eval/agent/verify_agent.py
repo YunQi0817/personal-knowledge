@@ -15,7 +15,6 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from app import config  # noqa: E402,F401  导入即加载 .env
-from app.services import qa  # noqa: E402
 from app.services.agent import get_agent  # noqa: E402
 
 VALID_TOOLS = {"search_knowledge", "list_documents", "summarize_document", "web_search"}
@@ -28,12 +27,6 @@ CASES: list[tuple[str, str | None, str]] = [
     ("1+1 等于几？", None, "与知识库无关 → 允许不调任何工具"),
 ]
 
-LATENCY_QUESTIONS = [
-    "基础版支持多少个正式成员？",
-    "试用版到期后数据会立刻删除吗？",
-]
-
-
 def calls_of(messages) -> list[str]:
     names: list[str] = []
     for message in messages:
@@ -43,7 +36,7 @@ def calls_of(messages) -> list[str]:
 
 
 def main() -> int:
-    print(f"AGENT_MODE={config.AGENT_MODE}  AGENT_MAX_STEPS={config.AGENT_MAX_STEPS}")
+    print("Agent 工具化验收（单一 Agent，无固定管道）")
     print("=" * 78)
 
     passed = valid = malformed = 0
@@ -81,26 +74,9 @@ def main() -> int:
     print(f"工具选择通过 {passed}/{len(CASES)}（第 4 题只观察）")
     print(f"工具调用：有效 {valid}  畸形 {malformed}  畸形率 {rate:.0%}")
 
-    # ---- 延迟对比 ----
-    print("\n" + "=" * 78)
-    print("延迟对比（预热后）")
-    print(f"{'问题':<26}{'固定管道':>12}{'Agent':>12}{'倍数':>9}")
-    print("-" * 78)
-    qa.answer("预热")
-    get_agent().invoke({"messages": [{"role": "user", "content": "预热"}]})
-    for question in LATENCY_QUESTIONS:
-        t0 = time.perf_counter()
-        qa.answer(question)
-        fixed_ms = (time.perf_counter() - t0) * 1000
-
-        t0 = time.perf_counter()
-        get_agent().invoke({"messages": [{"role": "user", "content": question}]})
-        agent_ms = (time.perf_counter() - t0) * 1000
-
-        ratio = agent_ms / fixed_ms if fixed_ms else 0
-        print(f"{question:<26}{fixed_ms:>10.0f}ms{agent_ms:>10.0f}ms{ratio:>8.2f}x")
-
-    print("\n注：固定管道只用 1 次模型调用；Agent 至少 2 次（决定工具 + 生成回答）。")
+    print()
+    print("提示：固定管道已在合并为单一 Agent 时删除，"
+          "与它的延迟对比数据记录在 eval/README.md「改动记录 2」。")
     return 0 if passed >= 3 else 1
 
 
