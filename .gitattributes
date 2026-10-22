@@ -1,0 +1,39 @@
+# 统一换行符为 LF。
+#
+# 背景：Windows 上 Python 的 Path.write_text() 默认会把 '\n' 转成 '\r\n'。
+# 本项目的源码原本是 LF，用脚本批量改文件时会整份翻成 CRLF，
+# 结果 diff 里看不出真正的改动（整个文件都显示为已修改）。
+#
+# 这里显式声明：文本文件一律用 LF 存储与检出。
+# 加完之后用 `git add --renormalize .` 把历史遗留的 CRLF 统一过来。
+#
+# 注意：`* text=auto` 让 git 自行判断二进制；eol=lf 只作用于被判定为文本的文件。
+
+* text=auto eol=lf
+
+# 明确指定常见文本类型（防止个别文件被误判为二进制）
+*.py      text eol=lf
+*.md      text eol=lf
+*.txt     text eol=lf
+*.json    text eol=lf
+*.toml    text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+*.html    text eol=lf
+*.css     text eol=lf
+*.js      text eol=lf
+*.ps1     text eol=lf
+*.cmd     text eol=lf
+*.bat     text eol=lf
+
+# 二进制文件不要动
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.pdf     binary
+*.docx    binary
+*.xlsx    binary
+*.pptx    binary
+*.db      binary
+*.pyc     binary
