@@ -35,11 +35,21 @@ html, body, [data-testid="stAppViewContainer"] {
     font-family: "Material Symbols Rounded" !important;
 }
 
-/* 隐去 Streamlit 的装饰件（部署按钮、菜单、页脚、状态浮标） */
-#MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"],
+/* 隐去 Streamlit 的装饰件（部署按钮、菜单、页脚、状态浮标）
+ *
+ * **不要**把 [data-testid="stToolbar"] 加进下面这行。Streamlit 1.66 把侧栏
+ * 折叠后的**展开按钮**放在工具栏内部：
+ *
+ *     stToolbar > stExpandSidebarButton          ← 展开按钮
+ *     stSidebar > stSidebarHeader > stSidebarCollapseButton   ← 收起按钮
+ *
+ * 隐藏整个 stToolbar 会连带藏掉展开按钮，表现为「侧栏能收起、再也展不开」。
+ * 工具栏本身保持可见但透明即可，里面的部署按钮/状态浮标已单独隐藏。 */
+#MainMenu, footer, [data-testid="stDecoration"],
 [data-testid="stStatusWidget"], [data-testid="stAppDeployButton"] {
     display: none !important;
 }
+[data-testid="stToolbar"] { background: transparent !important; }
 [data-testid="stHeader"] { background: transparent; }
 
 /* ============================================================ 主区域 */
