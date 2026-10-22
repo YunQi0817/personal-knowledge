@@ -408,12 +408,30 @@ for message in current_messages:
 
 if prompt:
     with st.chat_message("assistant", avatar=AVATAR["assistant"]):
+        # 不用 st.write_stream：Agent 会先花几秒调工具，这期间要能更新状态提示，
+        # 所以手动累积文本并逐步重绘。
+        status = st.status("正在理解问题…", expanded=False)
+        holder = st.empty()
+        buffer = ""
+        used: list[str] = []
         try:
-            # 不再预先检索：由 Agent 自己决定要不要检索、检索几次、用哪个工具。
-            # 引用来源在流式结束后从检索日志里取（只有真的检索过才会有）。
-            answer = st.write_stream(qa.stream_answer(prompt, history=history))
+            for kind, payload in qa.stream_events(prompt, history=history):
+                if kind == "tool":
+                    label = qa.TOOL_LABELS.get(payload["name"], payload["name"])
+                    if payload["phase"] == "start":
+                        used.append(label)
+                        status.update(label=f"正在{label}…", state="running")
+                elif kind == "text":
+                    buffer += payload
+                    holder.markdown(buffer + "▌")
+            holder.markdown(buffer)
+            # 折叠成一行"用过的工具"，让用户看到 Agent 做了什么
+            done = "、".join(dict.fromkeys(used)) or "直接回答（未使用工具）"
+            status.update(label=done, state="complete", expanded=False)
+
             sources = qa.format_sources(qa.take_search_log())
             render_sources(sources)
-            chat_store.append(conversation_id, "assistant", answer, sources)
+            chat_store.append(conversation_id, "assistant", buffer, sources)
         except Exception as exc:  # noqa: BLE001 - 把后端错误显示到界面
+            status.update(label=f"生成失败：{exc}", state="error")
             st.error(f"生成失败：{exc}")

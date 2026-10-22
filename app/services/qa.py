@@ -135,31 +135,76 @@ def format_sources(hits: Sequence[dict[str, Any]]) -> list[dict[str, Any]]:
     ]
 
 
-def stream_answer(
+#: 工具名 → 界面上的动作描述。界面只认这张表，新增工具时记得同步。
+TOOL_LABELS = {
+    "search_knowledge": "检索知识库",
+    "list_documents": "读取文档清单",
+    "summarize_document": "生成文档摘要",
+    "web_search": "联网搜索",
+}
+
+
+def stream_events(
     query: str,
     history: list[dict[str, str]] | None = None,
-) -> Iterator[str]:
-    """流式产出回答。
+) -> Iterator[tuple[str, Any]]:
+    """流式产出事件，供界面展示工具调用进度。
 
-    **只有一个 Agent**：要不要检索、检索几次、用哪个工具，全由它自己决定。
-    这里不再预先检索、也不再拼接上下文——那是固定管道的做法。
+    产出两类事件：
 
-    只把模型自己产出的文本流给界面。工具返回的内容（检索到的资料原文）
-    **不能**流出去，否则界面上会直接出现一大段原文。
+    - ``("tool", {"name": str, "phase": "start" | "end"})``
+    - ``("text", str)``
+
+    **为什么要单独给事件**：Agent 自己决定要不要检索，界面事先无从得知，
+    只有工具真的被调用了才知道该显示什么状态。
+
+    工具返回的**资料原文**不会作为事件流出——它只进模型上下文。
+    否则界面上会直接出现一大段检索原文。
     """
     messages: list[dict[str, str]] = list(history or [])
     messages.append({"role": "user", "content": query})
 
+    # 工具调用的参数是分块流式到达的，第一块才带 id 和 name，
+    # 这里记下「哪个调用对应哪个工具」，等 ToolMessage 回来时配对。
+    pending: dict[Any, str] = {}
+
     for event in get_agent().stream({"messages": messages}, stream_mode="messages"):
         # stream_mode="messages" 产出 (消息块, 元数据) 元组
         message = event[0] if isinstance(event, tuple) else event
+
         if isinstance(message, ToolMessage):
-            continue  # 工具结果只进模型上下文，不给用户看
+            call_id = getattr(message, "tool_call_id", None)
+            name = pending.pop(call_id, None) or getattr(message, "name", None) or "工具"
+            yield ("tool", {"name": name, "phase": "end"})
+            continue
+
         if not isinstance(message, AIMessageChunk):
             continue
+
+        for chunk in getattr(message, "tool_call_chunks", None) or []:
+            name = chunk.get("name")
+            key = chunk.get("id") or chunk.get("index", 0)
+            if name and key not in pending:
+                pending[key] = name
+                yield ("tool", {"name": name, "phase": "start"})
+
         text = getattr(message, "content", "") or ""
         if text:
-            yield text
+            yield ("text", text)
+
+
+def stream_answer(
+    query: str,
+    history: list[dict[str, str]] | None = None,
+) -> Iterator[str]:
+    """流式产出回答文本（只要文本时用这个）。
+
+    **只有一个 Agent**：要不要检索、检索几次、用哪个工具，全由它自己决定。
+    这里不再预先检索、也不再拼接上下文——那是固定管道的做法。
+    """
+    for kind, payload in stream_events(query, history=history):
+        if kind == "text":
+            yield payload
 
 
 def answer(query: str, history: list[dict[str, str]] | None = None) -> dict[str, Any]:
