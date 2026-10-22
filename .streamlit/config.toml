@@ -1,0 +1,13 @@
+[theme]
+base = "light"
+primaryColor = "#4f46e5"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f6f7f9"
+textColor = "#1f2328"
+
+[client]
+# 隐藏 "Deploy" 按钮与右上角菜单，界面更接近成品应用
+toolbarMode = "minimal"
+
+[browser]
+gatherUsageStats = false
