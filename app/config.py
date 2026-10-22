@@ -58,6 +58,21 @@ HYBRID_FETCH_FACTOR = 4
 #: RRF 的平滑常数：越大越弱化头部排名。60 是原论文的推荐值。
 RRF_K = 60
 
+# ---- 章节级去重 ----
+#: 同一章节只占一个召回名额。
+#:
+#: 背景：检索按**小块**算相似度，同一章节的多个小块会一起排到前面
+#: （实测「哪些套餐不支持 OCR」的 top-3 全部来自「二、套餐说明」）。
+#: 而送进模型的是 parent_text（整章节全文），那些重复小块的内容与第 1 名
+#: 完全相同——纯属浪费名额。开启后召回粒度从「小块级 top-k」对齐为
+#: 「章节级 top-k」，与 Small-to-Big 的设计意图一致。
+#:
+#: 设环境变量 RAG_SECTION_DEDUPE=0 可关闭，用于 A/B 对比（见 eval/README.md）。
+SECTION_DEDUPE = os.getenv("RAG_SECTION_DEDUPE", "1").lower() not in ("0", "false", "no", "off")
+
+#: 去重前把候选池放大多少倍。太小会导致挑不满 top_k 个不同章节。
+SECTION_DEDUPE_FETCH_FACTOR = 3
+
 
 # =========================
 # 路径

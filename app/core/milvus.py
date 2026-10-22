@@ -211,6 +211,40 @@ def insert_data(data: list[dict[str, Any]]) -> dict[str, Any]:
 # ================================================================== 检索
 
 
+def _dedupe_by_section(hits: list[dict[str, Any]], top_k: int) -> list[dict[str, Any]]:
+    """按章节去重：同一章节只占一个召回名额。
+
+    为什么需要：检索按**小块**算相似度，同一章节的多个小块会一起排到前面
+    （实测「哪些套餐不支持 OCR」的 top-3 全部来自「二、套餐说明」）。而下游
+    ``qa.build_user_prompt`` 送进模型的是 ``parent_text``（整章节全文）并按
+    ``(source, section)`` 去重——那第 2、3 名送进去的内容与第 1 名**完全相同**，
+    属于纯粹的重复，白白占掉本该给其他章节的名额。
+
+    在检索阶段就去重，等价于把召回粒度从「小块级 top-k」对齐成
+    「章节级 top-k」，与 Small-to-Big 的设计意图一致。
+
+    无章节的文档（纯文本且没有标题）退回按块去重，避免整篇只返回一条。
+    """
+    seen: set[tuple[str, str]] = set()
+    picked: list[dict[str, Any]] = []
+    for hit in hits:
+        entity = hit.get("entity", {}) or {}
+        section = str(entity.get(SECTION_FIELD) or "").strip()
+        source = str(entity.get(SOURCE_FIELD, ""))
+        if section:
+            key = (source, section)
+        else:
+            # 没有章节信息时用 chunk_id 区分，等于不去重
+            key = (source, f"#chunk:{entity.get(CHUNK_ID_FIELD)}")
+        if key in seen:
+            continue
+        seen.add(key)
+        picked.append(hit)
+        if len(picked) >= top_k:
+            break
+    return picked
+
+
 def search(
     query_vector: list[float],
     query_text: str = "",
@@ -249,10 +283,15 @@ def search(
             # "multiple anns_fields exist, please specify a anns_field"
             anns_field=DENSE_FIELD,
             search_params={"metric_type": "COSINE"},
-            limit=top_k,
+            # 去重需要更大的候选池：只取 top_k 的话，同一章节占满名额后
+            # 就没有别的章节可挑了
+            limit=max(top_k * config.SECTION_DEDUPE_FETCH_FACTOR, top_k),
             output_fields=OUTPUT_FIELDS,
         )
-        return results[0]
+        hits = results[0]
+        if config.SECTION_DEDUPE:
+            hits = _dedupe_by_section(hits, top_k)
+        return hits
 
     from pymilvus import AnnSearchRequest, RRFRanker
 
@@ -277,10 +316,15 @@ def search(
         collection_name=config.COLLECTION_NAME,
         reqs=requests,
         ranker=RRFRanker(config.RRF_K),
-        limit=top_k,
+        # 去重前先要回完整候选池（fetch 已放大），否则同一章节占满 top_k
+        # 之后就没得挑了
+        limit=fetch if config.SECTION_DEDUPE else top_k,
         output_fields=OUTPUT_FIELDS,
     )
-    return results[0]
+    hits = results[0]
+    if config.SECTION_DEDUPE:
+        hits = _dedupe_by_section(hits, top_k)
+    return hits
 
 
 # ================================================================== 文档管理

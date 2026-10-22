@@ -323,6 +323,7 @@ def main() -> int:
         f"  共 {overall['total']} 题　召回 {overall['retrieval_hit']}/{overall['total']}"
         f"（{pct(overall['retrieval_hit_rate'])}）　MRR {overall['mrr']:.3f}"
         f"　P50 {overall['latency_p50_ms']:.1f}ms　P95 {overall['latency_p95_ms']:.1f}ms"
+        f"　多样性 {overall['section_diversity']:.2f}"
     )
     if args.with_answer:
         ans_hits = sum(1 for r in all_rows if r.get("answer_hit"))
