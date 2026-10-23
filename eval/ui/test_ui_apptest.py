@@ -4,7 +4,7 @@
 这些光靠语法检查是发现不了的。
 
 用法（项目根目录）：
-    .venv\\Scripts\\python.exe eval\\agent\\test_ui_apptest.py
+    .venv\\Scripts\\python.exe eval\\ui\\test_ui_apptest.py
 """
 
 from __future__ import annotations

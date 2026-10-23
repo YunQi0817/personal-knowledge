@@ -161,9 +161,10 @@ Personal knowledge/
 | 05「3、初始化 Embedding」 | `init_embeddings(model="openai:"+EMBED_MODEL_NAME, ...)` | `core/embeddings.py` |
 | 05「4、读取文档并切分」 | `TextLoader` + `RecursiveCharacterTextSplitter(200/80, separators)` | `services/ingest.py` |
 | 05「5、生成向量并写入」 | `embed_model.embed_documents` → `client.upsert` → `flush` | `services/ingest.ingest_documents()` |
-| 05「6、创建Agent」 | `init_chat_model(model="mimo-v2.6-flash", model_provider="openai")` + `create_agent(model, tools=[], system_prompt)` | `core/llm.py` |
+| 05「6、创建Agent」 | `init_chat_model(model="mimo-v2.6-flash", model_provider="openai")` | `core/llm.py`（只负责连模型） |
+| **工具调用（本项目扩展）** | `create_agent(model, tools=[...], system_prompt)`，4 个工具由模型自主选择 | `services/agent.py` + `services/tools.py` |
 | 05「7、检索」 | `embed_model.embed_query` → `client.search(output_fields=["text","chunk_id","source"])` | `services/qa.retrieve()` |
-| 05「8、生产与回答生成」 | 拼 `[片段{i} \| chunk_id=.. \| source=..]` + `问题：/上下文：` prompt | `services/qa.build_user_prompt()` |
+| 05「8、生产与回答生成」 | 拼 `[片段{i} \| chunk_id=.. \| source=..]` 上下文块（不再拼「问题：」包装，问题已在对话历史里） | `services/qa.build_context()` |
 | 01 文档加载器 | `TextLoader` / `PyPDFLoader` / `UnstructuredWordDocumentLoader` / … | `services/ingest.loader_for()` |
 
 模型初始化、`.env` 加载、`os.getenv` 取值均写在各自模块内，与教程单元格**逐字一致**；
@@ -619,7 +620,7 @@ Excel 传 `merge_tiny=False`：它的每个行组都是**刻意切开**的，若
 唯一未命中是「经费预算是多少？」——那份文档里真的没有预算内容（只写了
 「另附表」），属于**正确拒答**。
 
-`qa.build_user_prompt()` 里的三条规则：
+`qa.build_context()` 里的三条规则：
 
 1. 优先用 `parent_text`；超过 `CONTEXT_BUDGET`（4000 字）就退回命中的小块。
 2. 同一章节的多个命中**只保留一份**，否则一个章节会重复占满上下文。
@@ -1091,7 +1092,7 @@ Streamlit st.file_uploader
 | 4 | 前端选型 | **仅 Streamlit**，不引入 FastAPI（§9 D2） |
 | 5 | 向量库客户端 | **原生 pymilvus**，不用 `langchain_milvus`（§9 D1） |
 | 6 | `.env` 的 DeepSeek 模型名 | **不改**，仅做降级兜底（§10 R2） |
-| 7 | `requirements.txt` | 本期不动 |
+| 7 | `requirements.txt` | **已规范化**：项目运行依赖占此名；教程全量清单移入 `docs/tutorial-requirements*.txt` |
 
 ## 14. 待确认事项
 

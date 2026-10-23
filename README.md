@@ -79,11 +79,10 @@ cd "C:\Users\27173\Desktop\Personal knowledge"
 python -m venv .venv
 
 # 2. 装依赖（约 5 分钟）
-.venv\Scripts\python.exe -m pip install -r requirements-app.txt
+.venv\Scripts\python.exe -m pip install -r requirements.txt
 #
-# 注意：是 requirements-app.txt，不是 requirements.txt。
-# 后者是教程学习环境的全量清单（57 个包），连 pymilvus 和 streamlit 都没有。
-# requirements-app.txt 才是本项目运行所需的最小集合。
+# requirements.txt 就是本项目运行所需的最小集合（19 个包）。
+# 教程学习环境的全量清单在 docs/tutorial-requirements*.txt，与本项目运行无关。
 
 # 3. 配密钥：复制下面的模板为 .env 并填入真实值
 ```
@@ -211,6 +210,30 @@ Milvus 3.0 原生支持：`text` 字段开了**中文分析器**，一个 `BM25 
 
 想对比两种模式，代码里留了开关：`qa.retrieve(query, mode="dense")`。
 
+### 只有一个 Agent，工具由它自己选
+
+问答路径上**没有固定管道**。检索能力被包装成工具交给模型，由它决定要不要检索、检索几次、用哪个：
+
+| 工具 | 何时用 |
+|---|---|
+| `search_knowledge` | 知识库相关问题（**强制先检索**） |
+| `list_documents` | 问「有哪些文档」 |
+| `summarize_document` | 要求总结某份文档 |
+| `web_search` | 知识库确实没有、且需要外部信息 |
+
+代码分工：`services/tools.py` 定义工具，`services/agent.py` 组装 Agent，
+`core/llm.py` 只管连模型。**工具不能写在 `core/`**——它要调 `services.qa`，
+而 `qa` 又要 `core.llm`，会形成循环导入。
+
+界面上能看到 Agent 做了什么：处理中显示「正在检索知识库…」，完成后折叠成一行工具名。
+
+> ⚠️ **系统提示词必须保持精简。** 实测把提示词写成 300 字长段落时，
+> 模型有 **40%** 概率把工具调用写成 XML 而不是 JSON，产生无效往返、延迟翻 3 倍。
+> 改成要点式后降到 0%。改动前请跑 `eval/agent/diag_prompt_length.py`。
+
+**代价**：Agent 比固定管道慢 2.6~3.6 倍（至少多一次模型往返）。这个数据是在合并前
+用双路径 A/B 测的，记录在 `eval/README.md`「改动记录 2」。
+
 ### 摘要与总结
 
 侧栏「📚 知识库」里有**「📋 知识库总览」**和**「总结这份文档」**两个入口。结果会作为一条助手消息写进对话记录，和普通问答一样被持久化。
@@ -278,7 +301,7 @@ Personal knowledge/
 ├── app/
 │   ├── config.py                  # 全局配置：Milvus 地址、切分参数、路径
 │   ├── core/
-│   │   ├── llm.py                 # 对话模型 + Agent（MiMo）
+│   │   ├── llm.py                 # 模型连接（MiMo）——只负责连模型，不含业务
 │   │   ├── embeddings.py          # 向量模型（SiliconFlow bge-m3）
 │   │   └── milvus.py              # Milvus 客户端：建集合/写入/检索/删除
 │   ├── services/
@@ -289,10 +312,12 @@ Personal knowledge/
 │   │   │   ├── pptx.py            #   .pptx          —— 按幻灯片（含备注页）
 │   │   │   ├── excel.py           #   .xlsx .xlsm    —— 按工作表，转「键：值」
 │   │   │   └── legacy.py          #   .pdf .html .csv .json 的兜底
+│   │   ├── tools.py               # Agent 工具：检索 / 列文档 / 总结 / 联网
+│   │   ├── agent.py               # Agent 组装（模型 + 工具 + 提示词）
 │   │   ├── ingest.py              # 解析 → 向量化 → 入库
 │   │   ├── conversations.py       # 对话记录持久化（SQLite）
 │   │   ├── summarize.py           # 章节摘要：惰性生成 + SQLite 缓存
-│   │   └── qa.py                  # 检索 → 拼 Prompt → Agent 流式作答
+│   │   └── qa.py                  # 检索/上下文组装 + 流式事件（供界面）
 │   └── ui/
 │       ├── theme.py               # 界面样式（自定义 CSS）
 │       └── streamlit_app.py       # 对话界面入口
@@ -300,9 +325,17 @@ Personal knowledge/
 ├── data/conversations.db          # 对话记录（SQLite，可用任意 SQLite 客户端查看）
 ├── data/summaries.db              # 章节摘要缓存（SQLite）
 ├── docs/                          # 批量导入的源文件目录
+│   └── tutorial-requirements*.txt # 教程环境的全量清单（与运行无关）
+├── eval/                          # 评测 harness（见 eval/README.md）
+│   ├── run_eval.py                #   检索评测主程序
+│   ├── debug_question.py          #   单题召回诊断
+│   ├── questions/                 #   题集（客服 5 / 策划书 12 / 难题 8）
+│   ├── results/                   #   历史结果存档
+│   ├── agent/                     #   Agent 验收与提示词诊断
+│   └── ui/                        #   界面端到端测试（AppTest）与 CSS 回归
 ├── ingest.py                      # 批量入库 CLI
-├── requirements-app.txt           # 本项目运行依赖（装这个）
-├── requirements.txt               # 教程学习环境清单（与本项目运行无关）
+├── requirements.txt               # 本项目运行依赖（装这个）
+├── .gitattributes                 # 统一 LF 换行符
 ├── DESIGN.md                      # 设计文档
 └── .env                           # 密钥（勿提交）
 ```

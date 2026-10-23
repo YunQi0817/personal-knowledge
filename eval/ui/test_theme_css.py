@@ -21,7 +21,14 @@ import re
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+def find_root(start: Path) -> Path:
+    for candidate in [start, *start.parents]:
+        if (candidate / "app" / "ui" / "theme.py").exists():
+            return candidate
+    raise SystemExit("找不到项目根目录")
+
+
+ROOT = find_root(Path(__file__).resolve().parent)
 THEME = ROOT / "app" / "ui" / "theme.py"
 
 #: 这些 testid 一旦被 display:none 就会破坏交互

@@ -111,14 +111,6 @@ def build_context(hits: Sequence[dict[str, Any]]) -> str:
     return "\n\n".join(context_blocks)
 
 
-def build_user_prompt(query: str, hits: Sequence[dict[str, Any]]) -> str:
-    """组装 user_prompt：问题 + 上下文（固定管道用）。"""
-    return f"""问题：
-{query}
-
-上下文：
-{build_context(hits)}
-"""
 
 
 def format_sources(hits: Sequence[dict[str, Any]]) -> list[dict[str, Any]]:

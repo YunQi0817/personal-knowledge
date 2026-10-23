@@ -6,6 +6,23 @@
 
 ---
 
+## 目录说明
+
+| 路径 | 内容 |
+|---|---|
+| `run_eval.py` | 检索评测主程序（召回 / MRR / 章节多样性 / 延迟） |
+| `debug_question.py` | 单题召回诊断：对比 hybrid 与 dense 的 top-k |
+| `ab_dedupe.ps1` | 章节级去重的 A/B 对比脚本 |
+| `questions/` | 题集：客服 5 题、策划书 12 题、难题 8 题 |
+| `results/` | 历史结果存档（JSON，可直接 diff 对比） |
+| `agent/` | Agent 工具化的验收与诊断脚本 |
+| `ui/` | 界面端到端测试（Streamlit AppTest）与 CSS 回归 |
+
+> **本文档后半部分是「改动记录」，按时间记录了每次改动的问题、做法与实测数据。
+> 想了解当前状态，看上面的目录说明 + 下面的「当前基线」即可。**
+
+---
+
 ## 快速开始
 
 在**项目根目录**执行：
@@ -198,7 +215,7 @@
 
 改成精简版后，首题延迟从 **22352ms 降到 8779ms**。
 
-### 延迟代价（`eval/agent/bench_agent_vs_fixed.py`）
+### 延迟代价（`ench_agent_vs_fixed.py（已随固定管道一并删除）`）
 
 | 问题 | 固定管道 | Agent | 倍数 |
 |---|---|---|---|
@@ -220,7 +237,7 @@
 | `app/services/agent.py` | 删掉 `LEGACY_SYSTEM_PROMPT` |
 | `app/config.py` | 删掉 `AGENT_MODE` / `AGENT_MAX_STEPS`（已无意义） |
 | `app/ui/streamlit_app.py` | 去掉预检索；引用改从检索日志取 |
-| `eval/agent/bench_agent_vs_fixed.py` | 删除（固定管道已不存在） |
+| `ench_agent_vs_fixed.py（已随固定管道一并删除）` | 删除（固定管道已不存在） |
 
 **关键修复**：合并后工具返回的**资料原文**也会流经 `stream_mode="messages"`，
 必须过滤掉 `ToolMessage`，否则界面上会直接出现一大段检索原文。
@@ -254,7 +271,7 @@
 用户能直接看到 Agent 做了什么。
 
 **端到端验证**：用 Streamlit 官方 `AppTest` 在无头环境真实执行整个应用
-（`eval/agent/test_ui_apptest.py`），覆盖：
+（`eval/ui/test_ui_apptest.py`），覆盖：
 
 | 检查项 | 结果 |
 |---|---|

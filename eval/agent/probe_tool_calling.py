@@ -13,7 +13,15 @@ import os
 import sys
 from pathlib import Path
 
-PROJECT_ROOT = Path(r"C:\Users\27173\Desktop\Personal knowledge")
+def find_root(start: Path) -> Path:
+    """向上找到含 app/ui/streamlit_app.py 的目录，避免硬编码绝对路径。"""
+    for candidate in [start, *start.parents]:
+        if (candidate / "app" / "core" / "llm.py").exists():
+            return candidate
+    raise SystemExit("找不到项目根目录（app/core/llm.py）")
+
+
+PROJECT_ROOT = find_root(Path(__file__).resolve().parent)
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from app import config  # noqa: E402  导入即完成 load_dotenv
